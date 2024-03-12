@@ -83,18 +83,26 @@ class Tree {
 
 class Simulator {
     static TREE_COUNT = 50;
+    static TIME_BETWEEN_STEPS = 0.07;  // seconds
 
     constructor() {
         this.qt = new Quadtree({
             x: 0, y: 0, width: SIM_DIM.x, height: SIM_DIM.y
-        });;
+        });
         this.trees = new Set();
         this.reset();
+        this.playing = false;
+        this._timeSinceLastStep = 0;  // seconds
     }
 
     reset() {
         this.qt.clear()
         this.createTrees();
+        this.pause();
+    }
+
+    pause() {
+        this.playing = false;
     }
 
     step() {
@@ -157,6 +165,16 @@ class Simulator {
         }
     }
 
+    update() {
+        if (this.playing) {
+            this._timeSinceLastStep += (deltaTime / 1000);
+            if (Simulator.TIME_BETWEEN_STEPS - this._timeSinceLastStep < EPSILON) {
+                sim.step();
+                this._timeSinceLastStep = 0;
+            }
+        }
+    }
+
     resolveDominance(t1) {
         for (const t2 of this.qt.retrieve(t1)) {
             if (t1 != t2 && t1.intersects(t2)) {
@@ -189,11 +207,9 @@ function isWithinCanvasBounds(x, y) {
     return x >= 0 && x <= SIM_DIM.x && y >= 0 && y <= SIM_DIM.y;
 }
 
-const timeBetweenSteps = 0.1;  // seconds
 let species = {};
-let simulator;
-let timeSinceLastStep = 0;  // seconds
-let playing = false;
+let buttons = {};
+let sim;
 
 function setup() {
     SIM_DIM = createVector(800, 800);
@@ -203,50 +219,44 @@ function setup() {
     createCanvas(CANVAS_DIM.x, CANVAS_DIM.y);
     createSpecies();
 
-    simulator = new Simulator();
+    sim = new Simulator();
 
     // Step button
-    button = createButton("Step");
-    button.size(50, 30);
-    button.position(CANVAS_DIM.x - 60, CANVAS_DIM.y - 40);
-    button.mousePressed(onStepPressed);
+    buttons.step = createButton("Step");
+    buttons.step.size(50, 30);
+    buttons.step.position(CANVAS_DIM.x - 60, CANVAS_DIM.y - 40);
+    buttons.step.mousePressed(onStepPressed);
 
     // Play/Stop button
-    playButton = createButton("P");
-    playButton.size(30, 30);
-    playButton.position(CANVAS_DIM.x - 100, CANVAS_DIM.y - 40);
-    playButton.mousePressed(onPlayPressed);
+    buttons.play = createButton("⏵");
+    buttons.play.size(30, 30);
+    buttons.play.position(CANVAS_DIM.x - 100, CANVAS_DIM.y - 40);
+    buttons.play.mousePressed(onPlayPressed);
 
     // Reset button
-    resetButton = createButton("R");
-    resetButton.size(30, 30);
-    resetButton.position(CANVAS_DIM.x - 140, CANVAS_DIM.y - 40);
-    resetButton.mousePressed(onResetPressed);
+    buttons.reset = createButton("⏹");
+    buttons.reset.size(30, 30);
+    buttons.reset.position(CANVAS_DIM.x - 140, CANVAS_DIM.y - 40);
+    buttons.reset.mousePressed(onResetPressed);
 }
 
 function onStepPressed() {
-    simulator.step();
+    sim.step();
 }
 
 function onPlayPressed() {
-    playing = !playing;
+    sim.playing = !sim.playing;
 }
 
 function onResetPressed() {
-    simulator.reset();
+    sim.reset();
 }
 
 function draw() {
     frameRate(60);
     background(220);
     noStroke();
-    simulator.display();
-
-    if (playing) {
-        timeSinceLastStep += (deltaTime / 1000);
-        if (timeBetweenSteps - timeSinceLastStep < EPSILON) {
-            simulator.step();
-            timeSinceLastStep = 0;
-        }
-    }
+    sim.display();
+    buttons.play.elt.textContent = sim.playing ? "⏸" : "⏵";
+    sim.update();
 }
