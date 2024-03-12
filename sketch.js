@@ -45,9 +45,7 @@ class Tree {
     }
 
     grow() {
-        if (!this.oldage) {
-            this.radius += species[this.species].growth;
-        }
+        this.radius += species[this.species].growth;
     }
 
     intersects(other) {
@@ -86,8 +84,10 @@ class Tree {
 class Simulator {
     static TREE_COUNT = 50;
 
-    constructor(qt) {
-        this.qt = qt;
+    constructor() {
+        this.qt = new Quadtree({
+            x: 0, y: 0, width: SIM_DIM.x, height: SIM_DIM.y
+        });;
         this.trees = new Set();
         this.reset();
     }
@@ -205,10 +205,7 @@ function setup() {
     createCanvas(CANVAS_DIM.x, CANVAS_DIM.y);
     createSpecies();
 
-    let qt = new Quadtree({
-        x: 0, y: 0, width: SIM_DIM.x, height: SIM_DIM.y
-    });
-    simulator = new Simulator(qt);
+    simulator = new Simulator();
 
     // Step button
     button = createButton("Step");
