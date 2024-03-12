@@ -162,8 +162,6 @@ class Simulator {
             if (t1 != t2 && t1.intersects(t2)) {
                 if (t1.radius < t2.radius) {
                     t1.dominated = true;
-                } else {
-                    t2.dominated = true;
                 }
             }
         }
@@ -181,8 +179,8 @@ function createSpecies() {
             color: color('orange'), maxsize: 7, offspring: 0.5
         }),
         bush: new SpeciesData({
-            name: 'bush', growth: 0.75, oldage: 0.4, shade: 0.8,
-            color: color('red'), maxsize: 3, offspring: 0.8
+            name: 'bush', growth: 0.75, oldage: 0.4, shade: 0.9,
+            color: color('red'), maxsize: 3, offspring: 0.7
         })
     };
 }
@@ -191,7 +189,7 @@ function isWithinCanvasBounds(x, y) {
     return x >= 0 && x <= SIM_DIM.x && y >= 0 && y <= SIM_DIM.y;
 }
 
-const timeBetweenSteps = 0.01;  // seconds
+const timeBetweenSteps = 0.1;  // seconds
 let species = {};
 let simulator;
 let timeSinceLastStep = 0;  // seconds
